@@ -55,10 +55,10 @@ var EditUser = Backbone.View.extend({
   render: function (options) {
     var that = this;
     if(options.id){
-      var user = new User({id : options.id});
-      user.fetch({
+      that.user = new User({id : options.id});
+      that.user.fetch({
         success: function (){
-          var template = _.template($('#edit-user-template').html(), {user: user});
+          var template = _.template($('#edit-user-template').html(), {user: that.user});
           that.$el.html(template);
         }
       })
@@ -71,10 +71,11 @@ var EditUser = Backbone.View.extend({
   },
   events: {
     'submit .edit-user-form': 'saveUser',
-    'click .delete' : 'deleteUser'
+    'click button.delete' : 'deleteUser'
   },
   saveUser: function (ev) {
   	ev.preventDefault();
+    // alert("in edit");
     var userDetails = $(ev.currentTarget).serializeObject();
 
     var user = new User();
@@ -87,10 +88,10 @@ var EditUser = Backbone.View.extend({
     // console.log(userDetails); 
     return false;
   },
-  deleteUser: function (user){
+  deleteUser: function (){
+    // alert("in delete");
     this.user.destroy({ 
       success: function (){
-        console.log(user);
         router.navigate('', {trigger: true})
       }
     })

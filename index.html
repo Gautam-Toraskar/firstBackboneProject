@@ -68,7 +68,7 @@
           <hr>
           <% if(user) { %>
             <input type="hidden" name="id" value="<%= user.id %>">
-            <button class="btn btn-danger detete pull-right">Delete</button>
+            <button type="button" class="btn btn-danger delete pull-right">Delete</button>
           <% }; %>
           <button class="btn btn-primary" type="submit"><%= user ? 'Update' : 'Create' %></button>
         </form>
