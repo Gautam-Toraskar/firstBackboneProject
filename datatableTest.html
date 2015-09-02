@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Backbone js tutorial</title>
+
+    <!-- Bootstrap -->
+    <link href="assets/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/js/vendor/DataTables/css/dataTables.bootstrap.css" rel="stylesheet">
+    <link href="assets/js/vendor/DataTables/css/datatables.responsive.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="assets/css/main.css">
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="container">
+      <h1>User Manager</h1>
+      <hr>
+      <div class="page"></div>
+
+      <script type="text/template" id="dataTable">
+      <a href="#/new" class="btn btn-primary">New</a>
+        <div id="testTable">
+          <table id="tableCrud" class="table table-bordered" cellspacing="0"
+            width="100%">
+            <thead>
+              <tr>
+                <th>Id</th>
+                <th data-class="expand">fistname</th>
+                <th data-hide="phone">start date</th>
+                <th data-hide="phone">end date</th>
+                <th data-hide="phone">current year</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </div>
+      </script>
+
+      <script type="text/template" id="user-list-template">
+        <a href="#/new" class="btn btn-primary">New</a>
+        <hr/>
+        <table class="table striped">
+          <thead>
+            <tr>
+              <th>First Name</th>
+              <th>Last Name</th>
+              <th>Age</th>
+              <th>link</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% _.each(users, function(user) { %>
+              <tr>
+                <td><%= user.get('firstname') %></td>
+                <td><%= user.get('lastname') %></td>
+                <td><%= user.get('age') %></td>
+                <td><a href="#/edit/<%= user.id %>" class="btn btn-link">edit</a></td>
+              </tr>
+              <% }); %>
+          </tbody>
+        </table>
+      </script>
+      
+      <!-- Edit user view -->
+      <script type="text/template" id="edit-user-template">
+        <form action="" class="edit-user-form col-md-3">
+          <legend><%= user ? 'Update' : 'Create'%>User</legend>
+          <div class="form-group">
+            <label for="firstname">First Name</label>
+            <input type="text" name="firstname" class="form-control" value="<%= user ? user.get('firstname') : ''%>">
+          </div>
+          <div class="form-group">
+            <label for="lastname">Last Name</label>
+            <input type="text" name="lastname" class="form-control" value="<%= user ? user.get('lastname') : ''%>">
+          </div>
+          <div class="form-group">
+            <label for="age">Age</label>
+            <input type="text" name="age" class="form-control" value="<%= user ? user.get('age') : ''%>">
+          </div>
+          <hr>
+          <% if(user) { %>
+            <input type="hidden" name="id" value="<%= user.id %>">
+            <button type="button" class="btn btn-danger delete pull-right">Delete</button>
+          <% }; %>
+          <button class="btn btn-primary" type="submit"><%= user ? 'Update' : 'Create' %></button>
+        </form>
+      </script>
+    </div>
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="assets/js/vendor/jquery/jquery.min.js"></script>
+    <script src="assets/js/vendor/underscorejs/underscore-min.js"></script>
+    <script src="assets/js/vendor/backbonejs/backbone-min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+    <script src="assets/js/vendor/DataTables/js/jquery.dataTables.js"></script>
+    <script src="assets/js/vendor/DataTables/js/dataTables.bootstrap.js"></script>
+    <script src="assets/js/vendor/DataTables/js/datatables.responsive.js"></script>
+    <script src="assets/js/vendor/DataTables/js/input.js"></script>
+    <script type="text/javascript">
+      $.support.cors = true;
+      var responsiveHelper = undefined;
+      var breakpointDefinition = {
+        tablet: 1024,
+        phone: 480
+      };
+
+      /*$.ajaxPrefilter(function(options, originalOptions, jqXHR) {
+        options.url = 'http://backbonejs-beginner.herokuapp.com' + options.url;
+      });*/
+
+      $.fn.serializeObject = function() {
+        var o = {};
+        var a = this.serializeArray();
+        $.each(a, function() {
+          if (o[this.name] !== undefined) {
+            if (!o[this.name].push) {
+              o[this.name] = [o[this.name]];
+            }
+            o[this.name].push(this.value || '');
+          } else {
+            o[this.name] = this.value || '';
+          }
+        });
+        return o;
+      };
+      /**
+       * Modal
+       * @type {[type]}
+       */
+      var Users = Backbone.Collection.extend({
+        url: 'http://backbonejs-beginner.herokuapp.com/users'
+      });
+
+      var User = Backbone.Model.extend({
+        urlRoot: 'http://backbonejs-beginner.herokuapp.com/users'
+      });
+
+      /**
+       * view
+       * @param  {[element]} ) {    var       that [description]
+       * @return {[type]}   [description]
+       */
+      
+      var DataTable = Backbone.View.extend({
+        el: '.page',
+        render: function () {
+          var template = _.template($('#dataTable').html());
+          this.$el.html(template);
+          var tableCrud = $("#tableCrud").dataTable({
+            processing: true,
+            serverSide: true,
+            pagingType: "input",
+            autoWidth: false,
+            ajax: {
+              url: "assets/js/data.json",
+              crossDomain: true,
+              dataType: "json",
+              data: function(d) {
+
+              }
+            },
+            columns: [{
+                data: 'id'
+              }, {
+                data: 'title'
+              }, {
+                data: 'start_date'
+              }, {
+                data: 'end_date'
+              }, {
+                data: 'current_academic_year'
+              }],
+            language: {
+              processing: "<div class='backdropDt'>Please be patient while we are processing</div>",
+              paginate: {
+                first: "<i class='glyphicon glyphicon-backward'></i>",
+                previous: "<i class='glyphicon glyphicon-chevron-left'></i>",
+                next: "<i class='glyphicon glyphicon-chevron-right'></i>",
+                last: "<i class='glyphicon glyphicon-forward'></i>"
+              },
+            responsive: true
+            },
+
+            preDrawCallback: function() {
+              /* Initialize the responsive datatables helper once. */
+              if (!this.responsiveHelper) {
+                this.responsiveHelper = new ResponsiveDatatablesHelper($(this), breakpointDefinition);
+              }
+            },
+            rowCallback: function(nRow) {
+              this.responsiveHelper.createExpandIcon(nRow);
+            },
+            drawCallback: function() {
+              this.responsiveHelper.respond();
+            }
+          });
+        }
+      });
+
+      var UserList = Backbone.View.extend({
+        el: '.page',
+        render: function() {
+          var that = this;
+          var users = new Users();
+          users.fetch({
+            success: function(users) {
+              var template = _.template($('#user-list-template').html(), {
+                users: users.models
+              });
+              that.$el.html(template);
+            }
+          })
+        }
+      });
+
+      var EditUser = Backbone.View.extend({
+        el: '.page',
+        render: function (options) {
+          console.log("showing edit user page");
+          var that = this;
+          if(options.id){
+            that.user = new User({id : options.id});
+            that.user.fetch({
+              success: function (){
+                var template = _.template($('#edit-user-template').html(), {user: that.user});
+                that.$el.html(template);
+              }
+            })
+          } else {
+            var template = _.template($('#edit-user-template').html(), {user: null});
+            this.$el.html(template);
+          }
+        },
+        events: {
+          'submit .edit-user-form': 'saveUser',
+          'click button.delete' : 'deleteUser'
+        },
+        saveUser: function (ev) {
+          ev.preventDefault();
+          // alert("in edit");
+          var userDetails = $(ev.currentTarget).serializeObject();
+
+          var user = new User();
+          user.save(userDetails, {
+            success: function (user) {
+              console.log(user);
+              router.navigate('', {trigger: true})
+            }
+          })
+          // console.log(userDetails); 
+          return false;
+        },
+        deleteUser: function (){
+          // alert("in delete");
+          this.user.destroy({ 
+            success: function (){
+              router.navigate('', {trigger: true})
+            }
+          })
+          return false;
+        }
+      });
+      /**
+       * [Router description]
+       * @type {[type]}
+       */
+      var Router = Backbone.Router.extend({
+        routes: {
+          '': 'home',
+          'new': 'editUser',
+          'edit/:id' : 'editUser'
+        }
+      });
+
+      var userList = new UserList();
+      var editList = new EditUser();
+      var showDataTable = new DataTable();
+      var router = new Router();
+
+      router.on('route:home', function() {
+        console.log("we have logged the home page");
+        // userList.render();
+        showDataTable.render();
+      });
+
+      router.on('route:editUser', function (id) {
+        console.log("this is edit user");
+        editList.render({ id: id});
+      });
+
+      Backbone.history.start();
+    </script>
+
+  </body>
+</html>

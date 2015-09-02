@@ -8,6 +8,8 @@
 
     <!-- Bootstrap -->
     <link href="assets/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/js/vendor/DataTables/css/dataTables.bootstrap.css" rel="stylesheet">
+    <link href="assets/js/vendor/DataTables/css/datatables.responsive.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="assets/css/main.css">
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -20,9 +22,25 @@
     <div class="container">
       <h1>User Manager</h1>
       <hr>
-      <div class="page"></div>
-
-      
+      <div class="page">
+        <div id="testTable">
+          <table id="tableCrud" class="table table-bordered" cellspacing="0"
+            width="100%">
+            <thead>
+              <tr>
+                <th>Id</th>
+                <th data-class="expand">Title</th>
+                <th data-hide="phone">Start Date</th>
+                <th data-hide="phone">End Date</th>
+                <th data-hide="phone">Current Year</th>
+              </tr>
+            </thead>
+            <!--tbody section is required-->
+            <tbody>
+            </tbody>
+          </table>
+        </div>
+      </div>
 
       <script type="text/template" id="user-list-template">
         <a href="#/new" class="btn btn-primary">New</a>
@@ -81,6 +99,10 @@
     <script src="assets/js/vendor/backbonejs/backbone-min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+    <script src="assets/js/vendor/DataTables/js/jquery.dataTables.js"></script>
+    <script src="assets/js/vendor/DataTables/js/dataTables.bootstrap.js"></script>
+    <script src="assets/js/vendor/DataTables/js/datatables.responsive.js"></script>
+
     <script type="text/javascript" src="assets/js/main.js"></script>
 
     

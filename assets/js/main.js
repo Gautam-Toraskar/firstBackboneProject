@@ -27,7 +27,7 @@ var Users = Backbone.Collection.extend({
 
 var User = Backbone.Model.extend({
   urlRoot: '/users'
-})
+});
 
 /**
  * view
@@ -53,6 +53,7 @@ var UserList = Backbone.View.extend({
 var EditUser = Backbone.View.extend({
   el: '.page',
   render: function (options) {
+    console.log("showing edit user page");
     var that = this;
     if(options.id){
       that.user = new User({id : options.id});
@@ -64,10 +65,8 @@ var EditUser = Backbone.View.extend({
       })
     } else {
       var template = _.template($('#edit-user-template').html(), {user: null});
-      this.$el.html(template);  
+      this.$el.html(template);
     }
-
-    
   },
   events: {
     'submit .edit-user-form': 'saveUser',
@@ -115,13 +114,67 @@ var editList = new EditUser();
 
 var router = new Router();
 
+$("#tableCrud").dataTable({
+  processing: true,
+  serverSide: true,
+  pagingType: "input",
+  autoWidth: false,
+  ajax: {
+    url: "data.json",
+    crossDomain: true,
+    dataType: "json",
+    data: function(d) {
+
+    }
+  },
+  columns: [{
+      data: 'id'
+    }, {
+      data: 'title'
+    }, {
+      data: 'start_date'
+    }, {
+      data: 'end_date'
+    }, {
+      data: 'current_academic_year'
+    }],
+    columnDefs: [ {
+        targets: 4,
+        orderable: false
+      } ],
+  language: {
+    processing: "<div class='backdropDt'>Please be patient while we are processing</div>",
+    paginate: {
+      first: "<i class='glyphicon glyphicon-backward'></i>",
+      previous: "<i class='glyphicon glyphicon-chevron-left'></i>",
+      next: "<i class='glyphicon glyphicon-chevron-right'></i>",
+      last: "<i class='glyphicon glyphicon-forward'></i>"
+    },
+  responsive: true
+  },
+
+  preDrawCallback: function() {
+    /* Initialize the responsive datatables helper once. */
+    if (!this.responsiveHelper) {
+      this.responsiveHelper = new ResponsiveDatatablesHelper($(this), breakpointDefinition);
+    }
+  },
+  rowCallback: function(nRow) {
+    this.responsiveHelper.createExpandIcon(nRow);
+  },
+  drawCallback: function() {
+    this.responsiveHelper.respond();
+  }
+});
+
 router.on('route:home', function() {
-  // console.log("we have logged the home page");
+  console.log("we have logged the home page");
   userList.render();
+
 });
 
 router.on('route:editUser', function (id) {
-  // console.log("this is edit user");
+  console.log("this is edit user");
   editList.render({ id: id});
 });
 
